@@ -56,13 +56,13 @@ int AI::find_path()
 			}
 		}	//end for
 
-			//若_open中存在终点（即苹果）,则已找到路径，结束循环
+		//若_open中存在终点（即苹果）,则已找到路径，结束循环
 		if (list_exist_point(_open, _board.apple())) {
 			break;
 		}
 	}	//end while
 
-		//未找到路径时情况，开发中。。。。。。
+	//未找到路径时情况，开发中。。。。。。
 	if (_open.empty()) {
 		_board.game_over();
 	}

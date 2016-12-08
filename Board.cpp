@@ -73,7 +73,7 @@ const Point & Board::apple() const
 	return _apple;
 }
 
-//在VC下使用gotoxy  
+//在VC下使用gotoxy，（控制台光标移动）
 void gotoxy(int x, int y)
 {
 	CONSOLE_SCREEN_BUFFER_INFO         csbiInfo;
