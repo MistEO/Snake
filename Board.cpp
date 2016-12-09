@@ -73,6 +73,11 @@ const Point & Board::apple() const
 	return _apple;
 }
 
+const Point operator+(const Point & lhs, const Point & rhs)
+{
+	return Point(lhs.first+rhs.first, lhs.second+rhs.second);
+}
+
 //在VC下使用gotoxy，（控制台光标移动）
 void gotoxy(int x, int y)
 {

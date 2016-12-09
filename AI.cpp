@@ -64,7 +64,7 @@ int AI::find_path()
 
 	//未找到路径时情况，开发中。。。。。。
 	if (_open.empty()) {
-		_board.game_over();
+		return 0;
 	}
 	return _export_path(_open.back());
 }
@@ -79,6 +79,29 @@ Point AI::get_dict()
 	}
 	Point dict = _determine_dict(_path.front());
 	return dict;
+}
+
+Point AI::wander()
+{
+	//static Point left_right_flag = Left;
+	if (_board.get(_snake.head() + Up) >= Blank) {
+		return Up;
+	}
+	else if (_board.get(_snake.head() + Down) >= Blank
+		&& _board.get(_snake.head() + Down + Down) >= Blank) {	//最底部留一条逃生路线
+		return Down;
+	}
+	else if (_board.get(_snake.head() + Left) >= Blank) {
+		//left_right_flag = Left;
+		return Left;
+	}
+	else if (_board.get(_snake.head() + Right) >= Blank) {
+		//left_right_flag = Right;
+		return Right;
+	}
+	else {	//错误情况
+		return Zero;
+	}
 }
 
 std::vector<AStarPoint> AI::_surround_points(AStarPoint center)

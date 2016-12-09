@@ -19,6 +19,7 @@ public:
 
 	const Point & head() const;
 	const Point & tail() const;
+	const std::queue<Point> & body() const;
 private:
 	void _display(const Point & last_tail = Point(0, 0));
 

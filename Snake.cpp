@@ -69,6 +69,11 @@ const Point & Snake::tail() const
 	return _body.front();
 }
 
+const std::queue<Point>& Snake::body() const
+{
+	return _body;
+}
+
 void Snake::_display(const Point & last_tail)
 {
 	gotoxy(_body.back().second * 2, _body.back().first);

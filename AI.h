@@ -13,6 +13,7 @@ public:
 	~AI();
 	int find_path();
 	Point get_dict();
+	Point wander();
 private:
 	std::vector<AStarPoint> _surround_points(AStarPoint center);
 	int _calcG(AStarPoint start, AStarPoint point);
@@ -25,6 +26,7 @@ private:
 	std::list<AStarPoint> _open;	//待计算的点
 	std::list<AStarPoint> _close;	//已计算的点
 	std::list<Point> _path;
+	std::queue<Point> _virtual_snake;
 };
 
 bool list_exist_point(const std::list<AStarPoint> & li, const AStarPoint & p);

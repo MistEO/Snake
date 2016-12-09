@@ -7,12 +7,14 @@
 
 using Point = std::pair<int, int>;
 
+const Point operator+(const Point & lhs, const Point & rhs);
+
 constexpr int Blank = 0,
 Apple = 1,
 Body = -1,
 Border = -2;
 
-constexpr int BoardSize = 20;
+constexpr int BoardSize = 10;
 constexpr int Interval = 100;
 
 class Board
