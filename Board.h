@@ -15,7 +15,7 @@ Body = -1,
 Border = -2;
 
 constexpr int BoardSize = 10;
-constexpr int Interval = 100;
+constexpr int Interval = 50;
 
 class Board
 {

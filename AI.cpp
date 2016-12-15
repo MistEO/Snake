@@ -13,13 +13,26 @@ AI::~AI()
 }
 
 
-int AI::find_path()
+int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 {
+	if (start == end
+		&& start != Zero) {
+		return 1;
+	}
+	if (!is_scout) {
+		start = _snake.head();
+		end = _board.apple();
+		snake = _snake.body();
+	}
+	_open.clear();
+	_close.clear();
+
 	//头部加入_open
-	_open.push_back(_snake.head());
+	_open.push_back(start);
 	_open.front().G() = 0;
 
-	while (!_open.empty()) {
+	bool complete_flag = false;
+	while (!_open.empty() && !complete_flag) {
 
 		//排序_open，将值最小点设为当前起始点，并加入_close
 		_open.sort();
@@ -28,7 +41,7 @@ int AI::find_path()
 		_close.push_back(temp_start);
 
 		//求周围点
-		std::vector<AStarPoint> surround = _surround_points(temp_start);
+		std::vector<AStarPoint> surround = _surround_points(temp_start, snake, end);
 		for (auto & p : surround) {
 
 			//若_close中存在该点，则跳过
@@ -49,88 +62,44 @@ int AI::find_path()
 			else {
 				p.parent() = std::make_shared<AStarPoint>(temp_start);
 				p.G() = _calcG(temp_start, p);
-				p.H() = _calcH(_board.apple(), p);
+				p.H() = _calcH(end, p);
 				p.F();
 				_open.push_back(p);
 
 			}
+			//若_open中存在终点,则已找到路径，结束循环
+			if (list_exist_point(_open, end)) {
+				complete_flag = true;
+				break;
+			}
 		}	//end for
-
-		//若_open中存在终点（即苹果）,则已找到路径，结束循环
-		if (list_exist_point(_open, _board.apple())) {
-			break;
-		}
 	}	//end while
 
 	//未找到路径时情况，开发中。。。。。。
 	if (_open.empty()) {
 		return 0;
 	}
+	if (is_scout) {
+		return 1;
+	}
 	return _export_path(_open.back());
 }
 
-Point AI::get_dict()
-{
-	if (_path.front() == _snake.head()) {
-		_path.pop_front();
-	}
-	if (_path.empty()) {
-		return Point(0, 0);
-	}
-	Point dict = _determine_dict(_path.front());
-	return dict;
-}
-
-Point AI::wander()
-{
-	//static Point left_right_flag = Left;
-	if (_board.get(_snake.head() + Up) >= Blank) {
-		return Up;
-	}
-	else if (_board.get(_snake.head() + Down) >= Blank
-		&& _board.get(_snake.head() + Down + Down) >= Blank) {	//最底部留一条逃生路线
-		return Down;
-	}
-	else if (_board.get(_snake.head() + Left) >= Blank) {
-		//left_right_flag = Left;
-		return Left;
-	}
-	else if (_board.get(_snake.head() + Right) >= Blank) {
-		//left_right_flag = Right;
-		return Right;
-	}
-	else {	//错误情况
-		return Zero;
-	}
-}
-
-std::vector<AStarPoint> AI::_surround_points(AStarPoint center)
+std::vector<AStarPoint> AI::_surround_points(AStarPoint center, std::list<Point> snake, Point target)
 {
 	std::vector<AStarPoint> sur;
-	Point temp;
+	std::vector<Point> temp(4);
 
-	temp = Point(center.x - 1, center.y);
-	if (_board.get(temp) >= Blank
-		&& center.x != 0) {
-		sur.push_back(temp);
-	}
+	temp[0] = center + Left;
+	temp[1] = center + Up;
+	temp[2] = center + Right;
+	temp[3] = center + Down;
 
-	temp = Point(center.x, center.y - 1);
-	if (_board.get(temp) >= Blank
-		&& center.y != 0) {
-		sur.push_back(temp);
-	}
-
-	temp = Point(center.x + 1, center.y);
-	if (_board.get(temp) >= Blank
-		&& center.x != BoardSize - 1) {
-		sur.push_back(temp);
-	}
-
-	temp = Point(center.x, center.y + 1);
-	if (_board.get(temp) >= Blank
-		&& center.y != BoardSize - 1) {
-		sur.push_back(temp);
+	for (auto p : temp) {
+		if (p == target 
+			|| (std::find(snake.begin(), snake.end(), p) == snake.end()	//该点不为蛇身
+			&& _board.get(p) != Border))								//且不为边界
+			sur.push_back(p);
 	}
 
 	return sur;
@@ -170,10 +139,58 @@ bool list_exist_point(const std::list<AStarPoint>& li, const AStarPoint & p)
 	}
 	return false;
 }
+Point AI::get_dict()
+{
+	if (_path.front() == _snake.head()) {
+		_path.pop_front();
+	}
+	if (_path.empty()) {
+		return Point(0, 0);
+	}
+	Point dict = _determine_dict(_path.front());
+	return dict;
+}
 
 Point AI::_determine_dict(Point next_point)
 {
 	int x = next_point.first - _snake.head().first;
 	int y = next_point.second - _snake.head().second;
 	return Point(x, y);
+}
+
+Point AI::wander()
+{
+	//static Point left_right_flag = Left;
+	if (_board.get(_snake.head() + Up) >= Blank) {
+		return Up;
+	}
+	else if (_board.get(_snake.head() + Down) >= Blank
+		&& _board.get(_snake.head() + Down + Down) >= Blank) {	//最底部留一条逃生路线
+		return Down;
+	}
+	else if (_board.get(_snake.head() + Left) >= Blank) {
+		//left_right_flag = Left;
+		return Left;
+	}
+	else if (_board.get(_snake.head() + Right) >= Blank) {
+		//left_right_flag = Right;
+		return Right;
+	}
+	else {	//错误情况
+		return Down;
+	}
+}
+
+
+bool AI::scout_move()
+{
+	_scout_snake = _snake.body();
+	for (auto p : _path) {
+		_scout_snake.push_back(p);
+		_scout_snake.pop_front();
+	}
+	if (find_path(true, _scout_snake.back(), _scout_snake.front(), _scout_snake)) {
+		return true;
+	}
+	return false;
 }

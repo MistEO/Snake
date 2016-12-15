@@ -7,7 +7,7 @@
 Snake::Snake(Board & b) : _board(b)
 {
 	//初始化蛇，位于面板中心
-	_body.push(Point(BoardSize / 2, BoardSize / 2));
+	_body.push_back(Point(BoardSize / 2, BoardSize / 2));
 	_board.get(_body.back()) = Body;
 
 	_display();
@@ -19,7 +19,10 @@ Snake::~Snake()
 
 bool Snake::move(Point dict)
 {
-	if (dict == Zero) {
+	if (dict != Left
+		&& dict != Right
+		&& dict != Up
+		&& dict != Down) {
 		return false;
 	}
 
@@ -45,7 +48,7 @@ bool Snake::move(Point dict)
 		_board.set_apple();
 		grow_flag = true;
 	}
-	_body.push(next_head);
+	_body.push_back(next_head);
 	_board.get(_body.back()) = Body;
 
 	//未吃到苹果则更新尾巴，吃到苹果则不更新尾巴
@@ -53,7 +56,7 @@ bool Snake::move(Point dict)
 	if (!grow_flag) {
 		_tail = _body.front();
 		_board.get(_tail) = Blank;
-		_body.pop();
+		_body.pop_front();
 	}
 	_display(_tail);
 	return true;
@@ -69,7 +72,7 @@ const Point & Snake::tail() const
 	return _body.front();
 }
 
-const std::queue<Point>& Snake::body() const
+const std::list<Point>& Snake::body() const
 {
 	return _body;
 }

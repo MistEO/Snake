@@ -20,7 +20,7 @@ void ai_play()
 	Snake s(b);
 	while (true) {
 		AI a(b, s);
-		if (a.find_path() != 0) {
+		if (a.find_path() && a.scout_move()) {
 			while (a.get_dict() != Zero) {
 				s.move(a.get_dict());
 			}
