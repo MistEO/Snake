@@ -37,10 +37,6 @@ bool Snake::move(Point dict)
 	//判断即将到达的位置的情况
 	Point next_head(_body.back().first + dict.first,
 		_body.back().second + dict.second);
-	if (_board.get(next_head) == Body
-		|| _board.get(next_head) == Border) {
-		_board.game_over();
-	}
 
 	//判断是否吃到苹果
 	bool grow_flag = false;
@@ -48,17 +44,25 @@ bool Snake::move(Point dict)
 		_board.set_apple();
 		grow_flag = true;
 	}
+
+	//未吃到苹果则更新尾巴，吃到苹果则不更新尾巴
+	Point last_tail(0, 0);
+	if (!grow_flag) {
+		last_tail = _body.front();
+		_board.get(last_tail) = Blank;
+		_body.pop_front();
+	}
+	if ((_board.get(next_head) == Body)
+		|| _board.get(next_head) == Border) {
+		_board.game_over();
+	}
+
+	//更新头部
 	_body.push_back(next_head);
 	_board.get(_body.back()) = Body;
 
-	//未吃到苹果则更新尾巴，吃到苹果则不更新尾巴
-	Point _tail(0, 0);
-	if (!grow_flag) {
-		_tail = _body.front();
-		_board.get(_tail) = Blank;
-		_body.pop_front();
-	}
-	_display(_tail);
+	_display(last_tail);
+
 	return true;
 }
 
@@ -79,12 +83,22 @@ const std::list<Point>& Snake::body() const
 
 void Snake::_display(const Point & last_tail)
 {
-	gotoxy(_body.back().second * 2, _body.back().first);
-	std::cout << "■";
-
 	//不更新尾巴时，则蛇变长
 	if (last_tail != Point(0, 0)) {
 		gotoxy(last_tail.second * 2, last_tail.first);
 		std::cout << " ";
 	}
+
+	static Point last_head = _body.back();
+
+	//输出头部
+	gotoxy(_body.back().second * 2, _body.back().first);
+	std::cout << "◆";
+
+	//输出身体
+	if (_body.size() > 1) {
+		gotoxy(last_head.second * 2, last_head.first);
+		std::cout << "■";
+	}
+	last_head = _body.back();
 }
