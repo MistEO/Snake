@@ -18,9 +18,10 @@ void ai_play()
 {
 	Board b;
 	Snake s(b);
+	AI a(b, s);
 	while (true) {
-		AI a(b, s);
-		if (a.find_path() && a.scout_move()) {
+		if (a.find_path() 
+			&& a.scout_move()) {
 			while (a.get_dict() != Zero) {
 				s.move(a.get_dict());
 			}
@@ -36,7 +37,7 @@ void play()
 	Board b;
 	Snake s(b);
 	char op;
-	Point dict = Zero;
+	Point dict = Right;
 	while (true) {
 		if (_kbhit()) {
 			op = _getch();

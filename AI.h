@@ -12,6 +12,7 @@ public:
 	AI(Board & b, Snake & s);
 	~AI();
 	int find_path(bool is_scout = false, Point start = Zero, Point end = Zero, std::list<Point> snake = std::list<Point>());
+	bool in_advanced();
 	Point get_dict();
 	Point wander();
 
@@ -20,7 +21,7 @@ private:
 	std::vector<Point> _surround_points(Point center, std::list<Point> snake, Point target = Point(-1,-1));
 	int _calcG(AStarPoint start, AStarPoint point);
 	int _calcH(AStarPoint end, AStarPoint point);
-	int _export_path(const AStarPoint & res_point);
+	size_t _export_path(const AStarPoint & res_point);
 	Point _determine_dict(Point next_point);
 
 	Board & _board;

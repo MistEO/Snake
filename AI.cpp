@@ -118,7 +118,7 @@ int AI::_calcH(AStarPoint end, AStarPoint point)
 	return H;
 }
 
-int AI::_export_path(const AStarPoint & res_point)
+size_t AI::_export_path(const AStarPoint & res_point)
 {
 	_path.clear();
 	//从结果点不断寻找父节点，所有父节点集合即为路径
@@ -186,7 +186,7 @@ Point AI::_determine_dict(Point next_point)
 Point AI::wander()
 {
 	//寻找蛇头周围可以吃到尾巴的点
-	std::vector<Point> surround = _surround_points(_snake.head(), _snake.body());
+	std::vector<Point> surround = _surround_points(_snake.head(), _snake.body(), _snake.tail());
 	std::vector<Point> current_point;
 	for (auto p : surround) {
 		if (find_path(true, p, _snake.tail())) {
@@ -196,7 +196,9 @@ Point AI::wander()
 
 	//此情况为：除了蛇头本身，附近没有点可以吃到尾巴
 	if (current_point.empty()) {
-		return _determine_dict(_snake.tail());
+		//return _determine_dict(_snake.tail());
+		find_path(false, _snake.head(), _snake.tail());
+		return get_dict();
 	}
 
 	//寻找可以吃到尾巴的点中，距离苹果最远的点
@@ -216,14 +218,28 @@ bool AI::scout_move()
 {
 	//探路蛇吃苹果
 	_scout_snake = _snake.body();
+	Point new_tail;
 	for (auto p : _path) {
 		_scout_snake.push_back(p);
+		new_tail = _scout_snake.front();
 		_scout_snake.pop_front();
 	}
+	//吃苹果后增长的尾巴
+	_scout_snake.push_front(new_tail);
+
 	//若探路蛇吃完苹果后，可以吃到自己的尾巴，则路线可行
 	if (find_path(true, _scout_snake.back(), _scout_snake.front(), _scout_snake)) {
 		return true;
 	}
 	//system("PAUSE");
+	return false;
+}
+
+//进入后期，待开发中。。。
+bool AI::in_advanced()
+{
+	if (_snake.body().size() > (BoardSize - 2)*(BoardSize - 2)/2) {
+		return true;
+	}
 	return false;
 }
