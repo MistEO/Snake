@@ -15,7 +15,7 @@ Body = -1,
 Border = -2;
 
 constexpr int BoardSize = 10;
-constexpr int Interval = 50;
+constexpr int Interval = 30;
 
 class Board
 {
@@ -26,7 +26,7 @@ public:
 	int & get(const Point & coo);
 	const Point & apple() const;
 	const Point & set_apple();
-	void game_over();
+	void game_over(bool win = false);
 private:
 	std::array<std::array<int, BoardSize>, BoardSize> _table;
 	void _display_border();

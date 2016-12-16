@@ -243,7 +243,7 @@ bool AI::scout_move()
 //进入后期，待开发中。。。
 bool AI::in_advanced()
 {
-	if ((BoardSize - 2)*(BoardSize - 2 - 1) < _snake.body().size()) {
+	if ((BoardSize - 2)*(BoardSize - 2 - 2) < _snake.body().size()) {
 		return true;
 	}
 	return false;

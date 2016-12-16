@@ -39,6 +39,18 @@ Board::~Board()
 
 const Point & Board::set_apple()
 {
+	bool full_flag = true;
+	for (int i = 1; i != _table.size()-1 && full_flag; ++i) {
+		for (int j = 1; j != _table.size()-1; ++j) {
+			if (_table[i][j] == Blank) {
+				full_flag = false;
+				break;
+			}
+		}
+	}
+	if (full_flag) {
+		game_over(true);
+	}
 	do {
 		_apple = Point(u(e), u(e));
 	} while (get(_apple) != Blank);
@@ -54,10 +66,16 @@ void Board::_display_apple()
 	std::cout << "бя";
 }
 
-void Board::game_over()
+void Board::game_over(bool win)
 {
-	gotoxy(0, BoardSize);
-	std::cout << "Game Over! Press Space to Exit";
+	if (win) {
+		system("CLS");
+		std::cout << "You Win!!! Press Space to Exit";
+	}
+	else {
+		gotoxy(0, BoardSize);
+		std::cout << "Game Over! Press Space to Exit";
+	}
 	while (_getch() != 32)
 		;
 	exit(0);
