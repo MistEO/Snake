@@ -19,7 +19,7 @@ void ai_play()
 	Board b;
 	Snake s(b);
 	AI a(b, s);
-	while (true) {
+	while (!a.in_advanced()) {
 		if (a.find_path() 
 			&& a.scout_move()) {
 			while (a.get_dict() != Zero) {
@@ -29,6 +29,9 @@ void ai_play()
 		else {
 			s.move(a.wander());
 		}
+	}
+	while (true) {
+		s.move(a.wander());
 	}
 }
 

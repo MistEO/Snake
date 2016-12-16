@@ -201,15 +201,20 @@ Point AI::wander()
 		return get_dict();
 	}
 
-	//寻找可以吃到尾巴的点中，距离苹果最远的点
+	//寻找可以吃到尾巴的点中，距离尾巴最远、苹果最近的点
 	const Point apple = _board.apple();
+	const Point tail = _snake.tail();
 	auto calcH = [](const Point & lhs, const Point & rhs)->int {
 		int H = abs(lhs.first - rhs.first) + abs(lhs.second - rhs.second);
 		return H;
 	};
 	Point p = *std::max_element(current_point.begin(), current_point.end(),
-		[apple, calcH](const Point & lhs, const Point & rhs) ->bool {
-		return calcH(apple, lhs) < calcH(apple, rhs);
+		[apple, tail, calcH](const Point & lhs, const Point & rhs) ->bool {
+		if (calcH(tail, lhs) == calcH(tail, rhs)) {
+			return calcH(apple, lhs) > calcH(apple, rhs);
+		}
+		return calcH(tail, lhs) < calcH(tail, rhs);
+
 	});
 	return _determine_dict(p);
 }
@@ -238,7 +243,7 @@ bool AI::scout_move()
 //进入后期，待开发中。。。
 bool AI::in_advanced()
 {
-	if (_snake.body().size() > (BoardSize - 2)*(BoardSize - 2)/2) {
+	if ((BoardSize - 2)*(BoardSize - 2 - 1) < _snake.body().size()) {
 		return true;
 	}
 	return false;
