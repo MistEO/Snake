@@ -1,6 +1,7 @@
 #include "AI.h"
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
+#include <functional>
 
 AI::AI(Board & b, Snake & s)
 	: _board(b), _snake(s)
@@ -19,11 +20,10 @@ int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 		&& start != Zero) {
 		return 1;
 	}
-	if (!is_scout) {
-		start = _snake.head();
-		end = _board.apple();
-		snake = _snake.body();
-	}
+	start == Zero ? start = _snake.head() : Zero;
+	end == Zero ? end = _board.apple() : Zero;
+	snake.empty() ? snake = _snake.body() : std::list<Point>();
+
 	_open.clear();
 	_close.clear();
 
@@ -41,30 +41,30 @@ int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 		_close.push_back(temp_start);
 
 		//求周围点
-		std::vector<AStarPoint> surround = _surround_points(temp_start, snake, end);
-		for (auto & p : surround) {
-
+		std::vector<Point> surround = _surround_points(temp_start, snake, end);
+		for (auto & a : surround) {
+			AStarPoint asp(a);
 			//若_close中存在该点，则跳过
-			if (list_exist_point(_close, p)) {
+			if (list_exist_point(_close, asp)) {
 				continue;
 			}
 
 			//若_open中存在该点，计算新的G。若新G小于当前G，则更新该点的父节点。
 			//若不存在，则更新父节点并加入_open
-			if (list_exist_point(_open, p)) {
-				int G = _calcG(temp_start, p);
-				if (G < p.G()) {
-					p.parent() = std::make_shared<AStarPoint>(temp_start);
-					p.G() = G;
-					p.F();
+			if (list_exist_point(_open, asp)) {
+				int G = _calcG(temp_start, asp);
+				if (G < asp.G()) {
+					asp.parent() = std::make_shared<AStarPoint>(temp_start);
+					asp.G() = G;
+					asp.F();
 				}
 			}
 			else {
-				p.parent() = std::make_shared<AStarPoint>(temp_start);
-				p.G() = _calcG(temp_start, p);
-				p.H() = _calcH(end, p);
-				p.F();
-				_open.push_back(p);
+				asp.parent() = std::make_shared<AStarPoint>(temp_start);
+				asp.G() = _calcG(temp_start, asp);
+				asp.H() = _calcH(end, asp);
+				asp.F();
+				_open.push_back(asp);
 
 			}
 			//若_open中存在终点,则已找到路径，结束循环
@@ -75,7 +75,6 @@ int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 		}	//end for
 	}	//end while
 
-	//未找到路径时情况，开发中。。。。。。
 	if (_open.empty()) {
 		return 0;
 	}
@@ -85,9 +84,9 @@ int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 	return _export_path(_open.back());
 }
 
-std::vector<AStarPoint> AI::_surround_points(AStarPoint center, std::list<Point> snake, Point target)
+std::vector<Point> AI::_surround_points(Point center, std::list<Point> snake, Point target)
 {
-	std::vector<AStarPoint> sur;
+	std::vector<Point> sur;
 	std::vector<Point> temp(4);
 
 	temp[0] = center + Left;
@@ -96,9 +95,9 @@ std::vector<AStarPoint> AI::_surround_points(AStarPoint center, std::list<Point>
 	temp[3] = center + Down;
 
 	for (auto p : temp) {
-		if (p == target 
-			|| (std::find(snake.begin(), snake.end(), p) == snake.end()	//该点不为蛇身
-			&& _board.get(p) != Border))								//且不为边界
+		if (_board.get(p) != Border		//该点不为边界
+			&& (p == target ||			//该点为目标点或该点不为蛇身
+				std::find(snake.begin(), snake.end(), p) == snake.end()))
 			sur.push_back(p);
 	}
 
@@ -121,6 +120,7 @@ int AI::_calcH(AStarPoint end, AStarPoint point)
 
 int AI::_export_path(const AStarPoint & res_point)
 {
+	_path.clear();
 	//从结果点不断寻找父节点，所有父节点集合即为路径
 	std::shared_ptr<AStarPoint> temp = std::make_shared<AStarPoint>(res_point);
 	while (temp->parent() != nullptr) {
@@ -155,42 +155,75 @@ Point AI::_determine_dict(Point next_point)
 {
 	int x = next_point.first - _snake.head().first;
 	int y = next_point.second - _snake.head().second;
+
 	return Point(x, y);
 }
 
+//无脑漫步模式
+//Point AI::wander()
+//{
+//	//static Point left_right_flag = Left;
+//	if (_board.get(_snake.head() + Up) >= Blank) {
+//		return Up;
+//	}
+//	else if (_board.get(_snake.head() + Down) >= Blank
+//		&& _board.get(_snake.head() + Down + Down) >= Blank) {	//最底部留一条逃生路线
+//		return Down;
+//	}
+//	else if (_board.get(_snake.head() + Left) >= Blank) {
+//		//left_right_flag = Left;
+//		return Left;
+//	}
+//	else if (_board.get(_snake.head() + Right) >= Blank) {
+//		//left_right_flag = Right;
+//		return Right;
+//	}
+//	else {	//错误情况
+//		return Down;
+//	}
+//}
+
 Point AI::wander()
 {
-	//static Point left_right_flag = Left;
-	if (_board.get(_snake.head() + Up) >= Blank) {
-		return Up;
+	//寻找蛇头周围可以吃到尾巴的点
+	std::vector<Point> surround = _surround_points(_snake.head(), _snake.body());
+	std::vector<Point> current_point;
+	for (auto p : surround) {
+		if (find_path(true, p, _snake.tail())) {
+			current_point.push_back(p);
+		}
 	}
-	else if (_board.get(_snake.head() + Down) >= Blank
-		&& _board.get(_snake.head() + Down + Down) >= Blank) {	//最底部留一条逃生路线
-		return Down;
-	}
-	else if (_board.get(_snake.head() + Left) >= Blank) {
-		//left_right_flag = Left;
-		return Left;
-	}
-	else if (_board.get(_snake.head() + Right) >= Blank) {
-		//left_right_flag = Right;
-		return Right;
-	}
-	else {	//错误情况
-		return Down;
-	}
-}
 
+	//此情况为：除了蛇头本身，附近没有点可以吃到尾巴
+	if (current_point.empty()) {
+		return _determine_dict(_snake.tail());
+	}
+
+	//寻找可以吃到尾巴的点中，距离苹果最远的点
+	const Point apple = _board.apple();
+	auto calcH = [](const Point & lhs, const Point & rhs)->int {
+		int H = abs(lhs.first - rhs.first) + abs(lhs.second - rhs.second);
+		return H;
+	};
+	Point p = *std::max_element(current_point.begin(), current_point.end(),
+		[apple, calcH](const Point & lhs, const Point & rhs) ->bool {
+		return calcH(apple, lhs) < calcH(apple, rhs);
+	});
+	return _determine_dict(p);
+}
 
 bool AI::scout_move()
 {
+	//探路蛇吃苹果
 	_scout_snake = _snake.body();
 	for (auto p : _path) {
 		_scout_snake.push_back(p);
 		_scout_snake.pop_front();
 	}
+	//若探路蛇吃完苹果后，可以吃到自己的尾巴，则路线可行
 	if (find_path(true, _scout_snake.back(), _scout_snake.front(), _scout_snake)) {
 		return true;
 	}
+	//system("PAUSE");
 	return false;
 }

@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iostream>
 #include <Windows.h>
+#include <assert.h>
 
 
 Snake::Snake(Board & b) : _board(b)
@@ -19,12 +20,11 @@ Snake::~Snake()
 
 bool Snake::move(Point dict)
 {
-	if (dict != Left
-		&& dict != Right
-		&& dict != Up
-		&& dict != Down) {
-		return false;
-	}
+	//检测非法操作
+	assert(dict == Left
+		|| dict == Right
+		|| dict == Up
+		|| dict == Down);
 
 	//若两次操作间隔小于Interval，则拒绝操作
 	static clock_t last_time = clock() - Interval;

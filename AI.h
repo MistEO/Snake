@@ -17,7 +17,7 @@ public:
 
 	bool scout_move();
 private:
-	std::vector<AStarPoint> _surround_points(AStarPoint center, std::list<Point> snake, Point target);
+	std::vector<Point> _surround_points(Point center, std::list<Point> snake, Point target = Point(-1,-1));
 	int _calcG(AStarPoint start, AStarPoint point);
 	int _calcH(AStarPoint end, AStarPoint point);
 	int _export_path(const AStarPoint & res_point);
