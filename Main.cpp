@@ -20,18 +20,26 @@ void ai_play()
 	Snake s(b);
 	AI a(b, s);
 	while (!a.in_advanced()) {
+		Point dict;
 		if (a.find_path() 
 			&& a.scout_move()) {
-			while (a.get_dict() != Zero) {
-				s.move(a.get_dict());
+			dict = a.get_dict();
+			while (dict != Zero) {
+				while (!s.move(dict))
+					;
+				dict = a.get_dict();
 			}
 		}
 		else {
-			s.move(a.wander());
+			dict = a.wander();
+			while (!s.move(dict))
+				;
 		}
 	}
 	while (true) {
-		s.move(a.wander());
+		Point dict = a.wander();
+		while (!s.move(dict))
+			;
 	}
 }
 
