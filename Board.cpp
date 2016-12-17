@@ -92,9 +92,9 @@ bool Board::is_border(const Point & p)
 		&& p.second != 0
 		&& p.first != BoardSize - 2
 		&& p.second != BoardSize - 2) {
-		return true;
+		return false;
 	}
-	return false;
+	return true;
 }
 
 const Point & Board::apple() const
