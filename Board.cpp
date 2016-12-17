@@ -90,8 +90,8 @@ bool Board::is_border(const Point & p)
 {
 	if (p.first != 0
 		&& p.second != 0
-		&& p.first != BoardSize - 2
-		&& p.second != BoardSize - 2) {
+		&& p.first != BoardSize - 1
+		&& p.second != BoardSize - 1) {
 		return false;
 	}
 	return true;

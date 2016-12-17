@@ -21,7 +21,7 @@ void ai_play()
 	AI a(b, s);
 	while (!a.in_advanced()) {
 		Point dict;
-		if (a.find_path() 
+		if (a.calc_path() 
 			&& a.scout_move()) {
 			dict = a.get_dict();
 			while (dict != Zero) {
@@ -49,6 +49,7 @@ void play()
 	Snake s(b);
 	char op;
 	Point dict = Right;
+	_getch();
 	while (true) {
 		if (_kbhit()) {
 			op = _getch();
