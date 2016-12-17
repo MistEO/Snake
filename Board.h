@@ -24,6 +24,7 @@ public:
 	~Board();
 
 	int & get(const Point & coo);
+	static bool is_border(const Point & p);
 	const Point & apple() const;
 	const Point & set_apple();
 	void game_over(bool win = false);

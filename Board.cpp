@@ -86,6 +86,17 @@ int & Board::get(const Point & coo)
 	return _table[coo.first][coo.second];
 }
 
+bool Board::is_border(const Point & p)
+{
+	if (p.first != 0
+		&& p.second != 0
+		&& p.first != BoardSize - 2
+		&& p.second != BoardSize - 2) {
+		return true;
+	}
+	return false;
+}
+
 const Point & Board::apple() const
 {
 	return _apple;
