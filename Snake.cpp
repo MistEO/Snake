@@ -18,7 +18,7 @@ Snake::~Snake()
 {
 }
 
-bool Snake::move(Point dict)
+bool Snake::move(const Point & dict)
 {
 	//检测非法操作
 	assert(dict == Left
@@ -34,7 +34,7 @@ bool Snake::move(Point dict)
 	}
 	last_time = clock();
 
-	//判断即将到达的位置的情况
+	//即将到达的点
 	Point next_head(_body.back().first + dict.first,
 		_body.back().second + dict.second);
 
@@ -52,6 +52,7 @@ bool Snake::move(Point dict)
 		_board.get(last_tail) = Blank;
 		_body.pop_front();
 	}
+	//判断即将到达的位置的情况
 	if ((_board.get(next_head) == Body)
 		|| _board.get(next_head) == Border) {
 		_board.game_over();

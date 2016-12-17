@@ -14,18 +14,18 @@ AI::~AI()
 }
 
 
-int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
+bool AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 {
 	if (start == end
 		&& start != Zero) {
-		return 1;
+		return true;
 	}
 	start == Zero ? start = _snake.head() : Zero;
 	end == Zero ? end = _board.apple() : Zero;
 	snake.empty() ? snake = _snake.body() : std::list<Point>();
 
-	_open.clear();
-	_close.clear();
+	std::list<AStarPoint> _open;	//待计算的点
+	std::list<AStarPoint> _close;	//已计算的点
 
 	//头部加入_open
 	_open.push_back(start);
@@ -52,18 +52,16 @@ int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 			//若_open中存在该点，计算新的G。若新G小于当前G，则更新该点的父节点。
 			//若不存在，则更新父节点并加入_open
 			if (list_exist_point(_open, asp)) {
-				int G = _calcG(temp_start, asp);
+				int G = _calcG(asp);
 				if (G < asp.G()) {
 					asp.parent() = std::make_shared<AStarPoint>(temp_start);
 					asp.G() = G;
-					asp.F();
 				}
 			}
 			else {
 				asp.parent() = std::make_shared<AStarPoint>(temp_start);
-				asp.G() = _calcG(temp_start, asp);
+				asp.G() = _calcG(asp);
 				asp.H() = _calcH(end, asp);
-				asp.F();
 				_open.push_back(asp);
 
 			}
@@ -76,15 +74,15 @@ int AI::find_path(bool is_scout, Point start, Point end, std::list<Point> snake)
 	}	//end while
 
 	if (_open.empty()) {
-		return 0;
+		return false;
 	}
-	if (is_scout) {
-		return 1;
+	if (!is_scout) {
+		_export_path(_open.back());
 	}
-	return _export_path(_open.back());
+	return true;
 }
 
-std::vector<Point> AI::_surround_points(Point center, std::list<Point> snake, Point target)
+std::vector<Point> AI::_surround_points(const Point & center, const std::list<Point> & snake, Point target)
 {
 	std::vector<Point> sur;
 	std::vector<Point> temp(4);
@@ -104,7 +102,7 @@ std::vector<Point> AI::_surround_points(Point center, std::list<Point> snake, Po
 	return sur;
 }
 
-int AI::_calcG(AStarPoint start, AStarPoint point)
+int AI::_calcG(AStarPoint & point)
 {
 	//int G = abs(point.x - start.x) + abs(point.y - start.y);
 	int parentG = ((point.parent() == nullptr) ? 0 : point.parent()->G());
@@ -112,9 +110,9 @@ int AI::_calcG(AStarPoint start, AStarPoint point)
 	return parentG + 1;
 }
 
-int AI::_calcH(AStarPoint end, AStarPoint point)
+int AI::_calcH(const AStarPoint & lhs, const AStarPoint & rhs) const
 {
-	int H = abs(point.x - end.x) + abs(point.y - end.y);
+	int H = abs(lhs.x - rhs.x) + abs(lhs.y - rhs.y);
 	return H;
 }
 
@@ -151,7 +149,7 @@ Point AI::get_dict()
 	return dict;
 }
 
-Point AI::_determine_dict(Point next_point)
+Point AI::_determine_dict(const Point & next_point)
 {
 	int x = next_point.first - _snake.head().first;
 	int y = next_point.second - _snake.head().second;
@@ -189,7 +187,7 @@ Point AI::wander()
 	std::vector<Point> surround = _surround_points(_snake.head(), _snake.body(), _snake.tail());
 	std::vector<Point> current_point;
 	for (auto p : surround) {
-		if (find_path(true, p, _snake.tail())) {
+		if (find_path(true, p, _snake.tail())) {	//此处O(n)非常高，待优化
 			current_point.push_back(p);
 		}
 	}
@@ -222,7 +220,7 @@ Point AI::wander()
 bool AI::scout_move()
 {
 	//探路蛇吃苹果
-	_scout_snake = _snake.body();
+	std::list<Point> _scout_snake = _snake.body();
 	Point new_tail;
 	for (auto p : _path) {
 		_scout_snake.push_back(p);

@@ -11,25 +11,25 @@ class AI
 public:
 	AI(Board & b, Snake & s);
 	~AI();
-	int find_path(bool is_scout = false, Point start = Zero, Point end = Zero, std::list<Point> snake = std::list<Point>());
+	bool find_path(
+		bool is_scout = false,
+		Point start = Zero, Point end = Zero,
+		std::list<Point> snake = std::list<Point>());
 	bool in_advanced();
 	Point get_dict();
 	Point wander();
 
 	bool scout_move();
 private:
-	std::vector<Point> _surround_points(Point center, std::list<Point> snake, Point target = Point(-1,-1));
-	int _calcG(AStarPoint start, AStarPoint point);
-	int _calcH(AStarPoint end, AStarPoint point);
+	std::vector<Point> _surround_points(const Point & center, const std::list<Point> & snake, Point target = Point(-1,-1));
+	int _calcG(AStarPoint & point);
+	int _calcH(const AStarPoint & end, const AStarPoint & point) const;
 	size_t _export_path(const AStarPoint & res_point);
-	Point _determine_dict(Point next_point);
+	Point _determine_dict(const Point & next_point);
 
 	Board & _board;
 	Snake & _snake;
-	std::list<AStarPoint> _open;	//待计算的点
-	std::list<AStarPoint> _close;	//已计算的点
 	std::list<Point> _path;
-	std::list<Point> _scout_snake;
 };
 
 bool list_exist_point(const std::list<AStarPoint> & li, const AStarPoint & p);

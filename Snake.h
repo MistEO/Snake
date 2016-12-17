@@ -15,7 +15,7 @@ public:
 	Snake(Board & b);
 	~Snake();
 
-	bool move(Point dict);
+	bool move(const Point & dict);
 
 	const Point & head() const;
 	const Point & tail() const;
