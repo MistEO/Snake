@@ -14,8 +14,8 @@ Apple = 1,
 Body = -1,
 Border = -2;
 
-constexpr int BoardSize = 10;
-constexpr int Interval = 30;
+constexpr int BoardSize = 20;
+constexpr int Interval = 10;
 
 class Board
 {

@@ -2,6 +2,8 @@
 #include <cmath>
 #include <algorithm>
 #include <functional>
+#include <mutex>
+#include <thread>
 
 AI::AI(Board & b, Snake & s)
 	: _board(b), _snake(s)
@@ -16,7 +18,7 @@ AI::~AI()
 bool AI::calc_path()
 {
 	std::list<AStarPoint> open;
-	_find_path(_snake.head(), _board.apple(), _snake.body(), open);
+	_find_path(_snake.head(), _board.apple(), _snake.body(), open);//此处O(n)非常高，待优化
 	if (open.empty()) {
 		return false;
 	}
@@ -33,7 +35,7 @@ bool AI::_find_path(Point start, Point end, std::list<Point> snake, std::list<AS
 	//std::list<AStarPoint> _open;	//待计算的点
 	std::list<AStarPoint> _close;	//已计算的点
 
-	//头部加入_open
+									//头部加入_open
 	_open.push_back(start);
 	_open.front().G() = 0;
 
@@ -184,17 +186,36 @@ Point AI::_determine_dict(const Point & next_point)
 //	}
 //}
 
+std::mutex AI::thread_mutex[4];
+
+void AI::find_surround_current_point(Point start, Point end, std::list<Point> snake, std::vector<Point> & current_point, int index)
+{
+	thread_mutex[index].lock();
+	if (_find_path(start, end, snake)) {
+		current_point.push_back(start);
+	}
+	thread_mutex[index].unlock();
+}
 Point AI::wander()
 {
 	//寻找蛇头周围可以吃到尾巴的点
 	std::vector<Point> surround = _surround_points(_snake.head(), _snake.body(), _snake.tail());
 	std::vector<Point> current_point;
-	for (auto p : surround) {
-		if (_find_path(p, _snake.tail(), _snake.body())) {	//此处O(n)非常高，待优化
-			current_point.push_back(p);
-		}
-	}
+	std::thread * find_thread[4];
 
+	int i = 0;
+	for (auto p : surround) {
+		//if (_find_path(p, _snake.tail(), _snake.body())) {	//此处O(n)非常高，待优化
+		//	current_point.push_back(p);
+		//}
+		find_thread[i] = new std::thread(find_surround_current_point, p, _snake.tail(), _snake.body(), current_point, i);
+		find_thread[i]->detach();
+		++i;
+	}
+	for (int i = 0; i != 4; ++i) {
+		thread_mutex[i].lock();
+		thread_mutex[i].unlock();
+	}
 	//此情况为：除了蛇头本身，附近没有点可以吃到尾巴
 	if (current_point.empty()) {
 		//return _determine_dict(_snake.tail());

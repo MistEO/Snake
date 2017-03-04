@@ -5,6 +5,7 @@
 #include "AStarPoint.h"
 #include <list>
 #include <vector>
+#include <mutex>
 
 class AI
 {
@@ -23,6 +24,8 @@ private:
 		Point end,
 		std::list<Point> snake,
 		std::list<AStarPoint> & _open = std::list<AStarPoint>());
+	static void find_surround_current_point(Point start, Point end, std::list<Point> snake, std::vector<Point> & current_point, int index);
+
 	static std::vector<Point> _surround_points(const Point & center, const std::list<Point> & snake, Point target = Point(-1,-1));
 	static int _calcG(AStarPoint & point);
 	static int _calcH(const AStarPoint & end, const AStarPoint & point);
@@ -33,4 +36,6 @@ private:
 	Board & _board;
 	Snake & _snake;
 	std::list<Point> _path;
+
+	static std::mutex thread_mutex[4];
 };
